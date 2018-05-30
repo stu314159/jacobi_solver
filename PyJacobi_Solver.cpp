@@ -94,12 +94,23 @@ void PyJacobi_Solver::solve()
 		  }else{
 			  u = u_odd; u_new = u_even;
 		  }
-		  #pragma acc kernels
-		  {
-			  for(int i = 1; i<(N-1); i++){ //iterate through all points
-				  u_new[i] = 0.5*(u[i-1]+u[i+1] - rhs);
+
+		  if(nIter%2==0){
+#pragma acc parallel loop
+			  for(int i=1; i<(N-1); i++){
+				  u_odd[i] = 0.5*(u_even[i-1] + u_even[i+1] - rhs);
 			  }
-		  }
+		  }else
+#pragma acc parallel loop
+			  for(int i=1; i<(N-1);i++){
+				  u_even[i] = 0.5*(u_odd[i-1] + u_odd[i+1] - rhs);
+			  }
+//		  #pragma acc kernels
+//		  {
+//			  for(int i = 1; i<(N-1); i++){ //iterate through all points
+//				  u_new[i] = 0.5*(u[i-1]+u[i+1] - rhs);
+//			  }
+//		  }
 		  if (nIter > 2)
 		  {
 			  //    rel_update = rel_error(u,u_new);
