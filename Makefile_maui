@@ -1,0 +1,46 @@
+# location of the Python header files
+PYTHON_VERSION = 2.7
+PYTHON_INCLUDE = /gpfs/pkgs/mhpcc/anaconda2-5.0.1/include/python$(PYTHON_VERSION)
+PYTHON_LIB=/gpfs/pkgs/mhpcc/anaconda2-5.0.1/lib
+BOOST_PYLIB = py27
+ 
+# location of the Boost Python include files and library
+ 
+BOOST_INC = /gpfs/pkgs/mhpcc/boost/include
+BOOST_LIB = /gpfs/pkgs/mhpcc/boost/lib
+ 
+# compile mesh classes
+TARGET=Jacobi_Solver
+FILE=PyJacobi_Solver
+EXT=cpp
+
+# GNU tools
+#MPI_CC=g++
+#MPI_FLAGS=-std=c++11 -O3 -Wall -fPIC -ta:nvidia:nordc
+#MPI_FLAGS2=-std=c++11 -shared -Wl,--export-dynamic -ta:nvidia:nordc
+
+#PGI tools
+MPI_CC=pgc++
+#MPI_FLAGS=-std=c++11 -acc -Minfo=acc -ta=nvidia:nordc
+#MPI_FLAGS2=-std=c++11 -shared -Wl,--export-dynamic -ta=nvidia:nordc
+MPI_FLAGS=-std=c++11
+MPI_FLAGS2=-std=c++11 -shared -Wl,--export-dynamic 
+
+SOURCES= PyJacobi_Solver.cpp WorkArounds.cpp
+OBJECTS= WorkArounds.o 
+	 
+
+$(FILE).so: $(FILE).o $(OBJECTS)
+	$(MPI_CC) $(MPI_FLAGS2) $(FILE).o -L$(BOOST_LIB) -lboost_python  -L$(PYTHON_LIB) -lpython$(PYTHON_VERSION) -o $(TARGET).so $(OBJECTS)
+ 
+$(FILE).o: $(FILE).cpp
+	$(MPI_CC) $(MPI_FLAGS) -I$(PYTHON_INCLUDE) -I$(BOOST_INC)  -fPIC -c $(FILE).$(EXT)
+
+%.o:%.cpp
+	$(MPI_CC) $(MPI_FLAGS) -I$(PYTHON_INCLUDE) -I$(BOOST_INC) -c $^
+
+clean:
+	rm -f *.o *.so $(TARGET) *~
+
+
+

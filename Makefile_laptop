@@ -1,0 +1,45 @@
+# location of the Python header files
+PYTHON_VERSION = 2.7
+PYTHON_INCLUDE = /home/stu/anaconda2/include/python$(PYTHON_VERSION)
+PYTHON_LIB=/home/stu/anaconda2/lib
+BOOST_PYLIB = py27
+ 
+# location of the Boost Python include files and library
+ 
+BOOST_INC = /usr/include
+BOOST_LIB = /usr/lib/x86_64-linux-gnu
+ 
+# compile mesh classes
+TARGET=Jacobi_Solver
+FILE=PyJacobi_Solver
+EXT=cpp
+
+# GNU tools
+#MPI_CC=g++
+#MPI_FLAGS=-std=c++11 -O3 -Wall -fPIC
+#MPI_FLAGS2=-std=c++11 -shared -Wl,--export-dynamic 
+
+#PGI tools
+MPI_CC=pgc++
+MPI_FLAGS=-std=c++11 -acc -Minfo=acc
+MPI_FLAGS2=-std=c++11 -shared -Wl,--export-dynamic
+EXTRA_INC=/opt/pgi/linux86-64/18.4/include-gcc70
+
+SOURCES= PyJacobi_Solver.cpp
+OBJECTS= 
+	 
+
+$(FILE).so: $(FILE).o $(OBJECTS)
+	$(MPI_CC) $(MPI_FLAGS2) $(FILE).o -L$(BOOST_LIB) -lboost_python-$(BOOST_PYLIB) -L$(PYTHON_LIB) -lpython$(PYTHON_VERSION) -o $(TARGET).so $(OBJECTS)
+ 
+$(FILE).o: $(FILE).cpp
+	$(MPI_CC) $(MPI_FLAGS) -I$(EXTRA_INC) -I$(PYTHON_INCLUDE) -I$(BOOST_INC)  -fPIC -c $(FILE).$(EXT)
+
+%.o:%.cpp
+	$(MPI_CC) $(MPI_FLAGS) -I$(PYTHON_INCLUDE) -I$(BOOST_INC) -c $^
+
+clean:
+	rm -f *.o *.so $(TARGET) *~
+
+
+
