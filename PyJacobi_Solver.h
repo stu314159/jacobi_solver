@@ -29,7 +29,6 @@ private:
   double * u_even;
   double * u_odd;
 
-  double rel_error(const double * u, const double * u_new);
 
   const int N;
   int maxIter;

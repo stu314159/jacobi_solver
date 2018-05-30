@@ -68,18 +68,7 @@ void PyJacobi_Solver::set_rhs(double r)
   rhs = r;
 }
 
-double PyJacobi_Solver::rel_error(const double * u, const double * u_new)
-{
-  double norm_err = 0.; //initialize the error norm
-  double norm_u = 0.; //initialize the vector norm
-//#pragma acc data update host(u_odd,u_even) 
- for(int i = 0; i<N; i++){
-    norm_err+=(u[i] - u_new[i])*(u[i] - u_new[i]);
-    norm_u+=u_new[i]*u_new[i];
-  }
-  double rel_err = sqrt(norm_err)/sqrt(norm_u);
-  return rel_err;
-}
+
 
 void PyJacobi_Solver::solve()
 {
