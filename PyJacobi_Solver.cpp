@@ -83,58 +83,62 @@ void PyJacobi_Solver::solve()
   int N = this->N;
 
   dummyUse(N);
-//#pragma acc data copyin(u_even[0:N],u_odd[0:N])
-  while(KEEP_GOING)
+#pragma acc data copyin(u_even[0:N],u_odd[0:N])
   {
-    nIter++; //increment iteration counter
-    if(nIter%2 == 0) // set pointers
-    { 
-      u = u_even; u_new = u_odd;
-    }else{
-      u = u_odd; u_new = u_even;
-    }
-//#pragma acc kernels
-{ 
-    for(int i = 1; i<(N-1); i++){ //iterate through all points
-      u_new[i] = 0.5*(u[i-1]+u[i+1] - rhs);
-    }
-} 
-   if (nIter > 2)
-    {
-  //    rel_update = rel_error(u,u_new);
-  //   refactor to put calculation in this function
-  //
-      double normUpdate = 0.;
-      for(int i=1; i<(N-1);i++){
-        normUpdate+=(u[i] - u_new[i])*(u[i] - u_new[i]);
-      }
+	  while(KEEP_GOING)
+	  {
+		  nIter++; //increment iteration counter
+		  if(nIter%2 == 0) // set pointers
+		  {
+			  u = u_even; u_new = u_odd;
+		  }else{
+			  u = u_odd; u_new = u_even;
+		  }
+		  #pragma acc kernels
+		  {
+			  for(int i = 1; i<(N-1); i++){ //iterate through all points
+				  u_new[i] = 0.5*(u[i-1]+u[i+1] - rhs);
+			  }
+		  }
+		  if (nIter > 2)
+		  {
+			  //    rel_update = rel_error(u,u_new);
+			  //   refactor to put calculation in this function
+			  //
+			  double normUpdate = 0.;
+#pragma acc parallel loop reduction(+:normUpdate)
+			  for(int i=1; i<(N-1);i++){
+				  normUpdate+=(u[i] - u_new[i])*(u[i] - u_new[i]);
+			  }
 
-      double normU = 0.;
-      for(int i=1; i<(N-1);i++){
+			  double normU = 0.;
+#pragma acc parallel loop reduction(+:normU)
+			  for(int i=1; i<(N-1);i++){
 
-        normU+=u_new[i]*u_new[i];
-      }
+				  normU+=u_new[i]*u_new[i];
+			  }
 
-      rel_update = sqrt(normUpdate/normU);
-    }
-    if ((rel_update < tolerance) || (nIter == maxIter)) {
-      KEEP_GOING = false;
-      numIter = nIter;
-      //before leaving, copy the solution to u
-      for(int i = 0; i<N;i++){
-        u_out[i] = u_new[i];
-      }
-      if (nIter == maxIter) {
-        std::cout << "rel_update = " << rel_update << std::endl;
-        std::cout << "tolerance = " << tolerance << std::endl;
-        exit_code = -1;
-      }
+			  rel_update = sqrt(normUpdate/normU);
+		  }
+		  if ((rel_update < tolerance) || (nIter == maxIter)) {
+			  KEEP_GOING = false;
+			  numIter = nIter;
+			  //before leaving, copy the solution to u
+#pragma acc data update host(u_even[0:N], u_odd[0:N])
+			  for(int i = 0; i<N;i++){
+				  u_out[i] = u_new[i];
+			  }
+			  if (nIter == maxIter) {
+				  std::cout << "rel_update = " << rel_update << std::endl;
+				  std::cout << "tolerance = " << tolerance << std::endl;
+				  exit_code = -1;
+			  }
 
-    } // check if I should stop
+		  } // check if I should stop
 
 
-  }// while loop
-
+	  }// while loop
+  } // acc data region
 }// solve()
 
 int PyJacobi_Solver::get_iter()
