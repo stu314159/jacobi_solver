@@ -24,8 +24,8 @@ MPI_CC=pgc++
 MPI_FLAGS=-std=c++11 -acc -Minfo=acc -ta=tesla:nordc
 MPI_FLAGS2=-std=c++11 -acc -Minfo=acc -shared -Wl,--export-dynamic -ta=tesla:nordc
 
-SOURCES= PyJacobi_Solver.cpp
-OBJECTS= 
+SOURCES= PyJacobi_Solver.cpp WorkArounds.cpp
+OBJECTS= WorkArounds.o
 	 
 
 $(FILE).so: $(FILE).o $(OBJECTS)

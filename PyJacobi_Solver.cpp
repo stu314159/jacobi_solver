@@ -125,6 +125,8 @@ void PyJacobi_Solver::solve()
         u_out[i] = u_new[i];
       }
       if (nIter == maxIter) {
+        std::cout << "rel_update = " << rel_update << std::endl;
+        std::cout << "tolerance = " << tolerance << std::endl;
         exit_code = -1;
       }
 

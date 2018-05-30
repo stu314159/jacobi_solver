@@ -70,7 +70,7 @@ def jacobi_solver_boost(L,dp_dx,mu,u_i,tol):
     js_obj.set_u_out(u_out);
     js_obj.set_u_even(u_even)
     js_obj.set_u_odd(u_odd)
-    js_obj.set_maxIter(100000);
+    js_obj.set_maxIter(1000000);
     js_obj.set_tolerance(tol);
     js_obj.set_rhs(rhs);
     #js_obj.print_status();
