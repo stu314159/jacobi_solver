@@ -12,7 +12,9 @@ tolerance(0),exit_code(0),numIter(0),rhs(0)
 
 PyJacobi_Solver::~PyJacobi_Solver()
 {
-
+const int N = this->N;
+dummyUse(N);
+#pragma acc exit data delete(u_odd[0:N],u_even[0:N])
 }
 
 void PyJacobi_Solver::set_u_out(boost::python::object obj)
@@ -31,6 +33,12 @@ void PyJacobi_Solver::set_u_even(boost::python::object obj)
   PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
   void * buf = pybuf.buf;
   u_even = (double*) buf;
+
+  const int N = this->N;
+  dummyUse(N);
+  #pragma acc enter data create(u_even[0:N])
+
+
 }
 
 void PyJacobi_Solver::set_u_odd(boost::python::object obj)
@@ -40,6 +48,9 @@ void PyJacobi_Solver::set_u_odd(boost::python::object obj)
   PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
   void * buf = pybuf.buf;
   u_odd = (double*) buf;
+  const int N = this->N;
+  dummyUse(N);
+  #pragma acc enter data create (u_odd[0:N])
 }
 
 void PyJacobi_Solver::set_maxIter(int maxI)
