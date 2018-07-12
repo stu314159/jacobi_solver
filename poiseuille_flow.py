@@ -9,7 +9,7 @@ Created on Tue May 29 13:05:03 2018
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-
+import argparse
 import Jacobi_Solver as js
 
 
@@ -27,9 +27,11 @@ def jacobi_solver(L,dp_dx,mu,u_i,tol):
     KEEP_GOING = True
     nIter = 0
     exit_code = 0
+    print "Entering Jacobi Solver with Plain Python"
     while KEEP_GOING:
         nIter += 1
-        
+        if (nIter%5000 == 0):
+          print "Executing iteration %d"%nIter
         # set pointers for arrays
         if nIter%2 == 0:
             u = u_even; u_new = u_odd;
@@ -81,6 +83,12 @@ def jacobi_solver_boost(L,dp_dx,mu,u_i,tol):
     return u_out, nIter, exit_code
     
 
+parser = argparse.ArgumentParser(prog='poiseuille_flow.py',description='solve NS in 1D between two flat plates')
+parser.add_argument('N',type=int)
+parser.add_argument('Run_mode',type=int)
+
+args = parser.parse_args()
+
 # common parameters
 L = 0.002; # m, plate separation
 mu = 0.4; # N-s/m*2, total viscosity of fluid
@@ -102,14 +110,19 @@ tau_wall_a = mu*c1
 print "u_max = {} m/s, u_avg = {} m/s, wall shear stress = {} Pa".\
   format(u_max_a,u_avg_a,tau_wall_a)
   
-N = 200;
+N = args.N;
+Run_mode = args.Run_mode;
+
 Y= np.linspace(0.,L,N);
 
 u_n = np.zeros(N,dtype=np.float64)
 u_n[0] = U_o; u_n[N-1] = U_L;
 t0 = time.time()
-#u_n, nIter, exit_code = jacobi_solver(L,dp_dx,mu,u_n,tol)
-u_n, nIter, exit_code = jacobi_solver_boost(L,dp_dx,mu,u_n,tol)
+if (Run_mode == 1):
+  u_n, nIter, exit_code = jacobi_solver(L,dp_dx,mu,u_n,tol)
+elif (Run_mode == 2):
+  u_n, nIter, exit_code = jacobi_solver_boost(L,dp_dx,mu,u_n,tol)
+
 t1 = time.time()
 elapsed_time = t1 - t0;
 print "Elapsed time = {} sec; nIter = {}; exit_code = {}".\

@@ -96,7 +96,11 @@ void PyJacobi_Solver::solve()
 		  }else{
 			  u = u_odd; u_new = u_even;
 		  }
-
+                  if(nIter%5000 == 0)
+                  {
+                      std::cout << "Executing iteration " << nIter << std::endl;
+                  
+                  }
 		  if(nIter%2==0){
 //#pragma acc parallel loop
 			  for(int i=1; i<(N-1); i++){
