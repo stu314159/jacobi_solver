@@ -19,8 +19,8 @@ EXT=cpp
 #MPI_FLAGS=-std=c++11 -O3 -Wall -fPIC -ta:nvidia:nordc
 #MPI_FLAGS2=-std=c++11 -shared -Wl,--export-dynamic -ta:nvidia:nordc
 
-#PGI tools
-MPI_CC=pgc++
+#IBM tools
+MPI_CC=xlc++
 #MPI_FLAGS=-std=c++11 -acc -Minfo=acc -ta=nvidia:nordc
 #MPI_FLAGS2=-std=c++11 -shared -Wl,--export-dynamic -ta=nvidia:nordc
 MPI_FLAGS=-std=c++11

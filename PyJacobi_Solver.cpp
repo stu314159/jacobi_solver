@@ -1,7 +1,9 @@
 #include "PyJacobi_Solver.h"
 #include <math.h>
 #include <iostream>
-#include "WorkArounds.h"
+//#include "WorkArounds.h"
+#include "omp.h"
+
 
 PyJacobi_Solver::PyJacobi_Solver(const int N) :
 u_out(NULL), u_even(NULL), u_odd(NULL), N(N), maxIter(0),
@@ -13,7 +15,7 @@ tolerance(0),exit_code(0),numIter(0),rhs(0)
 PyJacobi_Solver::~PyJacobi_Solver()
 {
 const int N = this->N;
-dummyUse(N);
+//dummyUse(N);
 #pragma acc exit data delete(u_odd[0:N],u_even[0:N])
 }
 
@@ -35,8 +37,8 @@ void PyJacobi_Solver::set_u_even(boost::python::object obj)
   u_even = (double*) buf;
 
   const int N = this->N;
-  dummyUse(N);
-  #pragma acc enter data create(u_even[0:N])
+ // dummyUse(N);
+ // #pragma acc enter data create(u_even[0:N])
 
 
 }
@@ -49,8 +51,8 @@ void PyJacobi_Solver::set_u_odd(boost::python::object obj)
   void * buf = pybuf.buf;
   u_odd = (double*) buf;
   const int N = this->N;
-  dummyUse(N);
-  #pragma acc enter data create (u_odd[0:N])
+  //dummyUse(N);
+  //#pragma acc enter data create (u_odd[0:N])
 }
 
 void PyJacobi_Solver::set_maxIter(int maxI)
@@ -82,8 +84,8 @@ void PyJacobi_Solver::solve()
   double * u_odd = this->u_odd;
   int N = this->N;
 
-  dummyUse(N);
-#pragma acc data copyin(u_even[0:N],u_odd[0:N])
+ // dummyUse(N);
+//#pragma acc data copyin(u_even[0:N],u_odd[0:N])
   {
 	  while(KEEP_GOING)
 	  {
@@ -96,12 +98,12 @@ void PyJacobi_Solver::solve()
 		  }
 
 		  if(nIter%2==0){
-#pragma acc parallel loop
+//#pragma acc parallel loop
 			  for(int i=1; i<(N-1); i++){
 				  u_odd[i] = 0.5*(u_even[i-1] + u_even[i+1] - rhs);
 			  }
 		  }else
-#pragma acc parallel loop
+//#pragma acc parallel loop
 			  for(int i=1; i<(N-1);i++){
 				  u_even[i] = 0.5*(u_odd[i-1] + u_odd[i+1] - rhs);
 			  }
@@ -117,13 +119,13 @@ void PyJacobi_Solver::solve()
 			  //   refactor to put calculation in this function
 			  //
 			  double normUpdate = 0.;
-#pragma acc parallel loop reduction(+:normUpdate)
+//#pragma acc parallel loop reduction(+:normUpdate)
 			  for(int i=1; i<(N-1);i++){
 				  normUpdate+=(u[i] - u_new[i])*(u[i] - u_new[i]);
 			  }
 
 			  double normU = 0.;
-#pragma acc parallel loop reduction(+:normU)
+//#pragma acc parallel loop reduction(+:normU)
 			  for(int i=1; i<(N-1);i++){
 
 				  normU+=u_new[i]*u_new[i];
@@ -135,7 +137,7 @@ void PyJacobi_Solver::solve()
 			  KEEP_GOING = false;
 			  numIter = nIter;
 			  //before leaving, copy the solution to u
-#pragma acc data update host(u_even[0:N], u_odd[0:N])
+//#pragma acc data update host(u_even[0:N], u_odd[0:N])
 			  for(int i = 0; i<N;i++){
 				  u_out[i] = u_new[i];
 			  }
